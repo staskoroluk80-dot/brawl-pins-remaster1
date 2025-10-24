@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Brawl Clicker</title>
+    <link rel="stylesheet" href="index.css">
+    
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="images/icon-192.png">
+</head>
+<body>
+
+    <div id="game-container">
+        
+        <header>
+            <h1 id="score-display">0 КОЙНІВ</h1>
+            <p id="taps-per-second">0 койнів/сек</p>
+        </header>
+
+        <main>
+            <button id="tap-button">
+                <img src="images/champie_super_brawl_pin.png" alt="Головний тапабельний елемент">
+            </button>
+            <div id="tap-feedback"></div> </main>
+
+        <aside id="shop">
+            <h2>МАГАЗИН АПГРЕЙДІВ</h2>
+            <div class="upgrade" id="upgrade-cursor">
+                <h3>КУРСОР</h3>
+                <p>+1 койн за тап</p>
+                <p>Вартість: <span id="cursor-cost">10</span></p>
+                <button onclick="buyUpgrade('cursor')">КУПИТИ</button>
+            </div>
+            <div class="upgrade" id="upgrade-autoclick">
+                <h3>АВТОМАТ</h3>
+                <p>+1 койн/сек</p>
+                <p>Вартість: <span id="autoclick-cost">100</span></p>
+                <button onclick="buyUpgrade('autoclick')">КУПИТИ</button>
+            </div>
+        </aside>
+
+    </div>
+    
+    <script src="index.js"></script>
+    <script>
+        // Код реєстрації Service Worker для PWA (як було в попередньому кроці)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(reg => console.log('SW registered!'))
+                    .catch(err => console.log('SW registration failed: ', err));
+            });
+        }
+    </script>
+</body>
+</html>
