@@ -1,114 +1,145 @@
+// --- ЗМІННІ ГРИ ---
 let score = 0;
-let tapPower = 1; // Скільки койнів за один тап
-let autoClickRate = 0; // Скільки койнів за секунду (койнів/сек)
+let tapPower = 1; 
+let autoClickRate = 0; 
 
-// Вартість та рівні
-const costs = {
-    cursor: 10,
-    autoclick: 100
+// Вартість та рівні (використовуємо UPGRADES для збереження стану)
+const UPGRADES = {
+    cursor: { cost: 10, rateIncrease: 1.5, power: 1 },
+    autoclick: { cost: 100, rateIncrease: 1.8, power: 1 }
 };
 
 // DOM елементи
 const scoreDisplay = document.getElementById('score-display');
 const tpsDisplay = document.getElementById('taps-per-second');
 const tapButton = document.getElementById('tap-button');
-const tapFeedback = document.getElementById('tap-feedback');
+
+// Оновлення вартості в інтерфейсі (DOM-елементи з HTML)
+const cursorCostDisplay = document.getElementById('cursor-cost');
+const autoclickCostDisplay = document.getElementById('autoclick-cost');
+
+
+// ----------------------------------
+// ЗБЕРЕЖЕННЯ / ЗАВАНТАЖЕННЯ СТАНУ (LocalStorage)
+// ----------------------------------
+
+function saveGame() {
+    const gameState = {
+        score: score,
+        tapPower: tapPower,
+        autoClickRate: autoClickRate,
+        cursorCost: UPGRADES.cursor.cost,
+        autoclickCost: UPGRADES.autoclick.cost
+    };
+    localStorage.setItem('clickerGameSave', JSON.stringify(gameState));
+}
+
+function loadGame() {
+    const savedState = localStorage.getItem('clickerGameSave');
+    
+    if (savedState) {
+        const gameState = JSON.parse(savedState);
+        
+        // Відновлення змінних
+        score = gameState.score || 0;
+        tapPower = gameState.tapPower || 1;
+        autoClickRate = gameState.autoClickRate || 0;
+
+        // Відновлення вартості апгрейдів
+        UPGRADES.cursor.cost = gameState.cursorCost || 10;
+        UPGRADES.autoclick.cost = gameState.autoclickCost || 100;
+        
+        console.log('Гра завантажена успішно!');
+    }
+}
+
 
 // --- 1. Основна Логіка Тапання ---
 function performTap(event) {
     score += tapPower;
-    updateDisplay();
-    
-    // Візуальний фідбек (+1)
-    showTapFeedback(tapPower, event);
+    // Оновлення дисплея також викликає збереження
+    updateDisplay(); 
 }
 
-// --- 2. Візуальний Фідбек ---
-function showTapFeedback(amount, event) {
-    const feedback = document.createElement('div');
-    feedback.innerText = `+${amount}`;
-    feedback.className = 'tap-feedback-popup';
-
-    // Розташування: трохи зміщуємо відносно кліка
-    feedback.style.left = `${event.clientX}px`;
-    feedback.style.top = `${event.clientY}px`;
-    
-    // Додаємо елемент і видаляємо його через деякий час
-    document.body.appendChild(feedback);
-    
-    // Анімація (використовуємо CSS-клас для анімації)
-    setTimeout(() => {
-        feedback.remove();
-    }, 800);
-}
-
-// Додайте цей CSS-клас в style.css
-// .tap-feedback-popup {
-//     position: fixed;
-//     color: #ffcc00;
-//     font-size: 2em;
-//     font-weight: bold;
-//     pointer-events: none;
-//     opacity: 1;
-//     animation: floatUp 0.8s ease-out forwards;
-//     z-index: 1000;
-// }
-// @keyframes floatUp {
-//     0% { transform: translateY(0); opacity: 1; }
-//     100% { transform: translateY(-50px); opacity: 0; }
-// }
-
-
-// --- 3. Логіка Магазину ---
+// --- 2. Логіка Магазину ---
 function buyUpgrade(type) {
-    const cost = costs[type];
+    const upgrade = UPGRADES[type];
+    const cost = upgrade.cost;
 
     if (score >= cost) {
         score -= cost;
 
         if (type === 'cursor') {
-            tapPower += 1;
-            costs.cursor = Math.ceil(cost * 1.5); // Збільшуємо вартість на 50%
-            document.getElementById('cursor-cost').innerText = costs.cursor;
+            tapPower += upgrade.power;
+            upgrade.cost = Math.ceil(cost * upgrade.rateIncrease); 
         } else if (type === 'autoclick') {
-            autoClickRate += 1;
-            costs.autoclick = Math.ceil(cost * 1.8); // Збільшуємо вартість
-            document.getElementById('autoclick-cost').innerText = costs.autoclick;
+            autoClickRate += upgrade.power;
+            upgrade.cost = Math.ceil(cost * upgrade.rateIncrease);
+            
             // Перезапускаємо інтервал для нового TPS
             clearInterval(autoClickInterval);
             startAutoClicker();
         }
         
-        updateDisplay();
+        // Оновлення дисплея викликає збереження
+        updateDisplay(); 
     } else {
         alert('Недостатньо койнів!');
     }
 }
 
-// --- 4. Автоматичний Клікер (TPS) ---
+// --- 3. Автоматичний Клікер (TPS) ---
 let autoClickInterval;
 function startAutoClicker() {
-    autoClickInterval = setInterval(() => {
-        score += autoClickRate;
-        updateDisplay();
-        // Можна додати візуальний фідбек для TPS тут, якщо потрібно
-    }, 1000); // Оновлюємо кожну секунду
+    // Зупиняємо старий інтервал, якщо він існує
+    if (autoClickInterval) clearInterval(autoClickInterval);
+
+    // Запускаємо новий інтервал, лише якщо є TPS
+    if (autoClickRate > 0) {
+        autoClickInterval = setInterval(() => {
+            score += autoClickRate;
+            updateDisplay(); 
+        }, 1000); // Оновлюємо кожну секунду
+    }
 }
 
-// --- 5. Оновлення Інтерфейсу ---
+// --- 4. Оновлення Інтерфейсу ---
 function updateDisplay() {
-    scoreDisplay.innerText = `${Math.floor(score)} КОЙНІВ`;
+    scoreDisplay.innerText = `${Math.floor(score).toLocaleString()} КОЙНІВ`;
     tpsDisplay.innerText = `${autoClickRate} койнів/сек`;
 
+    // Оновлення вартості в магазині
+    cursorCostDisplay.innerText = UPGRADES.cursor.cost.toLocaleString();
+    autoclickCostDisplay.innerText = UPGRADES.autoclick.cost.toLocaleString();
+
     // Оновлення стану кнопок магазину
-    document.getElementById('upgrade-cursor').querySelector('button').disabled = score < costs.cursor;
-    document.getElementById('upgrade-autoclick').querySelector('button').disabled = score < costs.autoclick;
+    document.getElementById('upgrade-cursor').querySelector('button').disabled = score < UPGRADES.cursor.cost;
+    document.getElementById('upgrade-autoclick').querySelector('button').disabled = score < UPGRADES.autoclick.cost;
+
+    // *** ЗБЕРЕЖЕННЯ ГРИ ***
+    saveGame();
 }
 
-// --- Ініціалізація ---
+
+// --- ІНІЦІАЛІЗАЦІЯ ---
+
+// 1. PWA: Реєстрація Service Worker 
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        // Реєструємо SW
+        navigator.serviceWorker.register('./sw.js') 
+          .then(reg => console.log('PWA: SW registered successfully!'))
+          .catch(err => console.log('PWA: SW registration failed: ', err));
+    });
+}
+
+// 2. ЗАВАНТАЖЕННЯ ГРИ: має бути першим
+loadGame(); 
+
+// 3. Прив'язка події тапання
 tapButton.addEventListener('click', performTap);
 
-// Початкове оновлення
+// 4. Початкове оновлення та запуск автоклікера
 updateDisplay();
 startAutoClicker(); 
 
