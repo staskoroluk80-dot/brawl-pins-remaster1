@@ -68,19 +68,7 @@ header {
     object-fit: cover;
 }
 
-/* 3. Фідбек (+1) */
-#tap-feedback {
-    position: absolute;
-    color: #ffcc00;
-    font-size: 2em;
-    font-weight: bold;
-    pointer-events: none; /* Щоб не блокував тапи */
-    opacity: 0;
-    transition: all 0.5s ease-out;
-    text-shadow: 0 0 5px #ff6600;
-}
-
-/* 4. Магазин */
+/* 3. Магазин */
 #shop {
     text-align: left;
     margin-top: 30px;
