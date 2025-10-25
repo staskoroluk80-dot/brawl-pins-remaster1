@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Super Brawl Clicker</title>
-    <link rel="stylesheet" href="index.css">
     
     <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="style.css">
     <link rel="icon" href="images/icon-192.png">
 </head>
 <body>
@@ -22,7 +22,7 @@
             <button id="tap-button">
                 <img src="images/champie_super_brawl_pin.png" alt="Головний тапабельний елемент">
             </button>
-            <div id="tap-feedback"></div> </main>
+            </main>
 
         <aside id="shop">
             <h2>МАГАЗИН АПГРЕЙДІВ</h2>
@@ -42,16 +42,6 @@
 
     </div>
     
-    <script src="index.js"></script>
-    <script>
-        // Код реєстрації Service Worker для PWA (як було в попередньому кроці)
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
-                    .then(reg => console.log('SW registered!'))
-                    .catch(err => console.log('SW registration failed: ', err));
-            });
-        }
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
